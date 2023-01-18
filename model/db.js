@@ -14,9 +14,14 @@ const sequelize = new Sequelize({
   },
   storage: path.join(__dirname, '../db.sqlite'),
 });
-sequelize.sync({ force: true }).then(() => {
-  console.log("All models were synchronized successfully.");
-})
+
+const force = process.env.NODE_ENV !== 'production'
+
+if (force) {
+  sequelize.sync({ force }).then(() => {
+    console.log("All models were synchronized successfully.");
+  })
+}
 
 module.exports = {
   sequelize,

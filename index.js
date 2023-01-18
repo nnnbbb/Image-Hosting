@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const multer = require('multer')
 const path = require('path')
@@ -8,7 +9,6 @@ const uid = require('uid-safe')
 const { asyncPool } = require("./utils")
 const { engine } = require('express-handlebars')
 const { Group } = require("./model/group")
-require('dotenv').config()
 
 const app = express()
 const host = process.env.HOST
@@ -175,5 +175,5 @@ app.post('/create-directory', async (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://${host}:${port}`)
+  console.log(`App listening at http://${host}:${port}`)
 })
