@@ -92,11 +92,11 @@ app.get('/delete/:tagId', (req, res) => {
 app.get('/links', (req, res) => {
   const files = fs.readdirSync(IMAGES)
   let links = files
-    // .filter(it => {
-    //   return fs.lstatSync(path.join(IMAGES, it)).isDirectory()
-    // })
+    .filter(it => {
+      return fs.lstatSync(path.join(IMAGES, it)).isDirectory()
+    })
     .map(it => {
-      let filePath = path.join(IMAGES,it)
+      let filePath = path.join(IMAGES, it)
       fs.readdirSync(filePath)
       // let mimeType = mime.lookup(it)
       let mimetype = fs.readdirSync(filePath).length === 1 ? "video" : "image"

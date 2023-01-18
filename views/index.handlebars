@@ -126,16 +126,8 @@
         let loading = $('#loading')
         loading.style.display = 'none'
 
-        let links = $('#links')
-        let a = document.createElement('a')
-        let span = document.createElement('span')
-        a.style.display = "inline-block"
         let url = `${API}/${JSON.parse(r.responseText)}`
-        a.href = url
-        a.text = url
-        span.innerHTML = `${type}: `
-        links.appendChild(span)
-        links.appendChild(a)
+        $('#links').appendChild(createLinkElement(url, type))
       }
     }
 
@@ -163,6 +155,18 @@
       }
     }
   })
+
+  function createLinkElement(url, type) {
+    let a = document.createElement('a')
+    let span = document.createElement('span')
+    let div = document.createElement('div')
+    a.href = url
+    a.text = url
+    span.innerHTML = `${type}: `
+    div.appendChild(span)
+    div.appendChild(a)
+    return div
+  }
 
   let canvas = document.createElement('canvas')
 
