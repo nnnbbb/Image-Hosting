@@ -1,4 +1,3 @@
-
 {{> nav }}
 
 <div style="
@@ -10,12 +9,15 @@
   <p class="font-monospace">Select your image, Supported files: jpg, jpeg, png.</p>
 
   <div class="input-group mb-3">
-    <input id="file" text="选择图片" type="file" accept="image/*" class="form-control" multiple >
+    <input id="file" text="选择图片" type="file" accept="image/*" class="form-control" multiple>
     <button id="upload" class="input-group-text" for="upload">
       <span id="loading" style="display: none;" class="spinner-border spinner-border-sm" role="status"
         aria-hidden="true"></span>
       上传
     </button>
+  </div>
+  <div id="progress" class="font-monospace" style="display: none;">
+    <span id="progress-current">0</span> / <span id="progress-total">0</span>
   </div>
 
   <div id="tag">
@@ -35,6 +37,7 @@
 </div>
 <script>
   const API = "{{API}}"
+  const $ = (...args) => document.querySelector(args)
 
   async function asyncPool(iterable, iteratorFn, poolLimit = 20) {
     const ret = []
@@ -53,20 +56,29 @@
   }
 
   // 第二种方式
-  document.querySelector('#upload').addEventListener('click', async () => {
+  $('#upload').addEventListener('click', async () => {
 
-    let eleFile = document.querySelector('#file')
+    let eleFile = $('#file')
     let files = [...eleFile.files]
     if (files.length == 0) {
       alert("File is require")
       return
     }
 
-    let loading = document.querySelector('#loading')
-    loading.style.display = ''
+    $('#loading').style.display = ''
+
+    $('#progress').style.display = ""
+    $('#progress-total').innerHTML = files.length
 
     let filenames = files.map(it => it.name)
-    await asyncPool(files, async (file) => await uploadFile(file), 2)
+    // {{!-- await asyncPool(files, async (file) => await uploadFile(file), 2) --}}
+    await asyncPool(files, async (file) => {
+      await uploadFile(file)
+      let n = $('#progress-current')
+      n.innerHTML = Number(n.innerHTML) + 1
+    }, 2)
+
+    $('#progress').style.display = 'none'
 
     createDirectory(dir.value, filenames)
   })
@@ -96,7 +108,7 @@
     let data = JSON.stringify({ directory, imgs })
     r.onreadystatechange = function () {
       if (r.readyState === 4) {
-        let loading = document.querySelector('#loading')
+        let loading = $('#loading')
         loading.style.display = 'none'
 
         let link = document.getElementById('link')
@@ -111,7 +123,7 @@
   }
 
 
-  let eleFile = document.querySelector('#file2')
+  let eleFile = $('#file2')
 
   window.list = []
   eleFile.addEventListener('change', function (event) {
