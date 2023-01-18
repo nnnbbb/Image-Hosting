@@ -126,12 +126,15 @@
         let loading = $('#loading')
         loading.style.display = 'none'
 
-        let links = document.getElementById('links')
+        let links = $('#links')
         let a = document.createElement('a')
+        let span = document.createElement('span')
         a.style.display = "inline-block"
-        let url = `${type}: ${API}/${JSON.parse(r.responseText)}`
+        let url = `${API}/${JSON.parse(r.responseText)}`
         a.href = url
         a.text = url
+        span.innerHTML = `${type}: `
+        links.appendChild(span)
         links.appendChild(a)
       }
     }
