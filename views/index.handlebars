@@ -1,0 +1,211 @@
+
+{{> nav }}
+
+<div style="
+    text-align: center;
+    width: 60%;
+    margin-left: 20%;
+    margin-top: 5%;
+  ">
+  <p class="font-monospace">Select your image, Supported files: jpg, jpeg, png.</p>
+
+  <div class="input-group mb-3">
+    <input id="file" text="选择图片" type="file" accept="image/*" class="form-control" multiple >
+    <button id="upload" class="input-group-text" for="upload">
+      <span id="loading" style="display: none;" class="spinner-border spinner-border-sm" role="status"
+        aria-hidden="true"></span>
+      上传
+    </button>
+  </div>
+
+  <div id="tag">
+    <a id="link" href="" target="_blank"></a>
+  </div>
+</div>
+{{!-- 第二种方式 前端压缩 --}}
+
+<div style="display: none">
+  <input id="dir">
+  <br>
+  <br>
+  <input id="file2" type="file" multiple>
+  <div id="main">
+  </div>
+
+</div>
+<script>
+  const API = "{{API}}"
+
+  async function asyncPool(iterable, iteratorFn, poolLimit = 20) {
+    const ret = []
+    const executing = new Set()
+    for (const item of iterable) {
+      const p = Promise.resolve().then(() => iteratorFn(item, iterable))
+      ret.push(p)
+      executing.add(p)
+      const clean = () => executing.delete(p)
+      p.then(clean).catch(clean)
+      if (executing.size >= poolLimit) {
+        await Promise.race(executing)
+      }
+    }
+    return Promise.all(ret)
+  }
+
+  // 第二种方式
+  document.querySelector('#upload').addEventListener('click', async () => {
+
+    let eleFile = document.querySelector('#file')
+    let files = [...eleFile.files]
+    if (files.length == 0) {
+      alert("File is require")
+      return
+    }
+
+    let loading = document.querySelector('#loading')
+    loading.style.display = ''
+
+    let filenames = files.map(it => it.name)
+    await asyncPool(files, async (file) => await uploadFile(file), 2)
+
+    createDirectory(dir.value, filenames)
+  })
+
+  async function uploadFile(file) {
+    let formData = new FormData()
+    formData.append("uploadedImages", file, file.name)
+
+    return new Promise((reslove, reject) => {
+      let r = new XMLHttpRequest()
+      r.open("POST", `${API}/projects`, true)
+      r.onreadystatechange = function () {
+        if (r.readyState === 4) {
+          // console.log('xhr.responseText ->', xhr.responseText)
+          reslove()
+        }
+      }
+      // xhr.setRequestHeader("Content-Type", "multipart/form-data");
+      r.send(formData)
+    })
+  }
+
+  function createDirectory(directory, imgs) {
+    let r = new XMLHttpRequest()
+    r.open("POST", `${API}/create-directory`, true)
+
+    let data = JSON.stringify({ directory, imgs })
+    r.onreadystatechange = function () {
+      if (r.readyState === 4) {
+        let loading = document.querySelector('#loading')
+        loading.style.display = 'none'
+
+        let link = document.getElementById('link')
+        let url = `${API}/${JSON.parse(r.responseText)}`
+        link.href = url
+        link.text = url
+      }
+    }
+
+    r.setRequestHeader('Content-Type', 'application/json')
+    r.send(data)
+  }
+
+
+  let eleFile = document.querySelector('#file2')
+
+  window.list = []
+  eleFile.addEventListener('change', function (event) {
+
+    for (let i = 0; i < event.target.files.length; i++) {
+      let file = event.target.files[i]
+
+      if (file.type.indexOf("image") == 0) {
+        let canvas = getCanvas(file)
+        let div = document.createElement('div')
+        document.getElementById('main')
+
+        // div.appendChild(canvas)
+        // document.getElementById('main').appendChild(div)
+        window.list.push(file)
+      }
+    }
+  })
+
+  let canvas = document.createElement('canvas')
+
+  function getCanvas(file) {
+
+    // 压缩图片需要的一些元素和对象
+    let reader = new FileReader()
+    let img = new Image()
+    img.style.width = "100%"
+
+    reader.readAsDataURL(file)
+    // 文件base64化，以便获知图片原始尺寸
+    reader.onload = function (e) {
+      console.log('set img src')
+      img.src = e.target.result
+    }
+
+    // 缩放图片需要的canvas
+    let context = canvas.getContext('2d')
+
+    // base64地址图片加载完毕后
+    img.onload = function () {
+      console.log('img loaded')
+
+      // 图片原始尺寸
+      let originWidth = this.width
+      let originHeight = this.height
+      // 最大尺寸限制
+      let maxWidth = 1920
+      let maxHeight = 1080
+      // 目标尺寸
+      let targetWidth = originWidth
+      let targetHeight = originHeight
+      // 图片尺寸超过400x400的限制
+      if (originWidth > maxWidth || originHeight > maxHeight) {
+        if (originWidth / originHeight > maxWidth / maxHeight) {
+          // 更宽，按照宽度限定尺寸
+          targetWidth = maxWidth
+          targetHeight = Math.round(maxWidth * (originHeight / originWidth))
+        } else {
+          targetHeight = maxHeight
+          targetWidth = Math.round(maxHeight * (originWidth / originHeight))
+        }
+      }
+
+      // canvas对图片进行缩放
+      canvas.width = targetWidth
+      canvas.height = targetHeight
+      // 清除画布
+      context.clearRect(0, 0, targetWidth, targetHeight)
+      // 图片压缩
+      context.drawImage(img, 0, 0, targetWidth, targetHeight)
+      // canvas转为blob并上传
+
+      canvas.toBlob(function (blob) {
+        let formData = new FormData()
+        formData.append("file", blob, file.name)
+
+        // 图片ajax上传
+        let xhr = new XMLHttpRequest()
+
+        // 文件上传成功
+        xhr.onreadystatechange = function () {
+          if (xhr.status == 200) {
+            delete reader
+
+
+            // xhr.responseText就是返回的数据
+            // console.log('xhr.responseText ->', xhr.responseText)
+          }
+        }
+        // 开始上传
+        xhr.open("POST", `${API}/uploadFile`, true)
+        xhr.send(formData)
+      }, file.type || 'image/png')
+    }
+  }
+
+</script>

@@ -1,0 +1,3 @@
+images/*
+*.sqlite
+node_modules/*
