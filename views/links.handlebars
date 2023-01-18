@@ -1,9 +1,11 @@
 {{> nav }}
-
-{{#each list}}
-<div style="text-align: center; margin: 0 auto">
-  <span>{{this.file}}</span>
-  <a href="{{this.link}}" style="width: 100%; " target="_blank">查看</a>
-  <a href="/delete/{{this.file}}" style="width: 100%; ">删除</a>
+<div class="font-monospace">
+  {{#each list}}
+  <div style="text-align: center; margin: 0 auto">
+    <span>{{this.mimetype}}: </span>
+    <span>{{this.file}}</span>
+    <a href="{{this.link}}" style="width: 100%; " target="_blank">查看</a>
+    <a href="/delete/{{this.file}}" style="width: 100%; ">删除</a>
+  </div>
+  {{/each}}
 </div>
-{{/each}}

@@ -9,6 +9,7 @@ const uid = require('uid-safe')
 const { asyncPool } = require("./utils")
 const { engine } = require('express-handlebars')
 const { Group } = require("./model/group")
+const mime = require('mime-types')
 
 const app = express()
 const host = process.env.HOST
@@ -95,9 +96,15 @@ app.get('/links', (req, res) => {
     //   return fs.lstatSync(path.join(IMAGES, it)).isDirectory()
     // })
     .map(it => {
+      let filePath = path.join(IMAGES,it)
+      fs.readdirSync(filePath)
+      // let mimeType = mime.lookup(it)
+      let mimetype = fs.readdirSync(filePath).length === 1 ? "video" : "image"
+
       let res = {
         link: `http://${host}:${port}/${it}`,
         file: it,
+        mimetype,
       }
       return res
     })
@@ -122,7 +129,7 @@ app.post('/projects', multiUpload.array('uploadedImages'), async (req, res) => {
       fs.writeFileSync(savePath, buffer)
       return res.status(200).send("successfully").end()
     }
-    
+
     const image = sharp(file.buffer)
     const metadata = await image.metadata()
     // image size > 5M  and  height > 1440px

@@ -20,8 +20,7 @@
     <span id="progress-current">0</span> / <span id="progress-total">0</span>
   </div>
 
-  <div id="tag">
-    <a id="link" href="" target="_blank"></a>
+  <div id="links">
   </div>
 </div>
 {{!-- 第二种方式 前端压缩 --}}
@@ -64,17 +63,19 @@
       alert("File is require")
       return
     }
-    if (files[0].type.indexOf('video') == 0 && files.length > 1) {
-      alert("Video file only accept one")
-      return
+    // 删除所有链接
+    const parent = document.getElementById("links")
+    while (parent.firstChild) {
+      parent.firstChild.remove()
     }
+
 
     $('#loading').style.display = ''
 
     $('#progress').style.display = ""
     $('#progress-total').innerHTML = files.length
 
-    let imgsInfo = files.map(it => ({
+    let filesInfo = files.map(it => ({
       name: it.name,
       type: it.type,
     }))
@@ -87,7 +88,13 @@
 
     $('#progress').style.display = 'none'
 
-    createDirectory(dir.value, imgsInfo)
+
+    let imgs = filesInfo.filter(it => it.type.indexOf("image") === 0)
+
+    let videos = filesInfo.filter(it => it.type.indexOf("video") === 0)
+
+    imgs.length > 0 && await createDirectory(imgs, "image")
+    videos.length > 0 && await asyncPool(videos, async (video) => await createDirectory([video], "video"), 2)
   })
 
   async function uploadFile(file) {
@@ -108,21 +115,24 @@
     })
   }
 
-  function createDirectory(directory, imgs) {
+  function createDirectory(imgs, type = "") {
     console.log('imgs ->', imgs)
     let r = new XMLHttpRequest()
     r.open("POST", `${API}/create-directory`, true)
 
-    let data = JSON.stringify({ directory, imgs })
+    let data = JSON.stringify({ imgs })
     r.onreadystatechange = function () {
       if (r.readyState === 4) {
         let loading = $('#loading')
         loading.style.display = 'none'
 
-        let link = document.getElementById('link')
-        let url = `${API}/${JSON.parse(r.responseText)}`
-        link.href = url
-        link.text = url
+        let links = document.getElementById('links')
+        let a = document.createElement('a')
+        a.style.display = "inline-block"
+        let url = `${type}: ${API}/${JSON.parse(r.responseText)}`
+        a.href = url
+        a.text = url
+        links.appendChild(a)
       }
     }
 
