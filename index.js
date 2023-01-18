@@ -27,7 +27,7 @@ app.engine('handlebars', engine({
 app.set('view engine', 'handlebars')
 
 // app.all('*', (req, res, next) => {
-     // if (req.path == '/') return next();
+// if (req.path == '/') return next();
 
 //   next();
 // });
@@ -89,13 +89,17 @@ app.get('/delete/:tagId', (req, res) => {
 // 查看全部图片链接
 app.get('/links', (req, res) => {
   const files = fs.readdirSync(IMAGES)
-  let links = files.map(it => {
-    let res = {
-      link: `http://${host}:${port}/${it}`,
-      file: it,
-    }
-    return res
-  })
+  let links = files
+    // .filter(it => {
+    //   return fs.lstatSync(path.join(IMAGES, it)).isDirectory()
+    // })
+    .map(it => {
+      let res = {
+        link: `http://${host}:${port}/${it}`,
+        file: it,
+      }
+      return res
+    })
   res.render("links", { list: links })
 })
 
@@ -134,7 +138,7 @@ app.get('/:tagId', async (req, res) => {
     return res.status(404).send({ error: { message: "Not Found!" } })
   }
   // let files = fs.readdirSync(imgPath)
-  let group = await Group.findOne({ where: { directory: tagId }, raw: true })
+  let group = await Group.findOne({ where: { directory: tagId } })
   let files = JSON.parse(group.names)
 
   res.render("img", { list: files, title: tagId })

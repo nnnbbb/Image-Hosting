@@ -5,7 +5,7 @@ const sequelize = new Sequelize({
   host: 'localhost',
   dialect: 'sqlite',
   logging: false,
-
+  query: { raw: true },
   pool: {
     max: 5,
     min: 0,
@@ -15,13 +15,11 @@ const sequelize = new Sequelize({
   storage: path.join(__dirname, '../db.sqlite'),
 });
 
-const force = process.env.NODE_ENV !== 'production'
+// const alter = process.env.NODE_ENV === 'development'
 
-if (force) {
-  sequelize.sync({ force }).then(() => {
-    console.log("All models were synchronized successfully.");
-  })
-}
+// sequelize.sync({ alter }).then(() => {
+//   console.log("All models were synchronized successfully.");
+// })
 
 module.exports = {
   sequelize,
