@@ -86,6 +86,8 @@
       n.innerHTML = Number(n.innerHTML) + 1
     }, 5)
 
+    $('#progress-total').innerHTML = 0
+    $('#progress-current').innerHTML = 0
     $('#progress').style.display = 'none'
 
 
@@ -116,7 +118,6 @@
   }
 
   function createDirectory(imgs, type = "") {
-    console.log('imgs ->', imgs)
     let r = new XMLHttpRequest()
     r.open("POST", `${API}/create-directory`, true)
 
