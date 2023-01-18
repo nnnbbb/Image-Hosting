@@ -6,10 +6,10 @@
     margin-left: 20%;
     margin-top: 5%;
   ">
-  <p class="font-monospace">Select your image, Supported files: jpg, jpeg, png.</p>
+  <p class="font-monospace">Select your image, Supported files: image or video.</p>
 
   <div class="input-group mb-3">
-    <input id="file" text="选择图片" type="file" accept="image/*" class="form-control" multiple>
+    <input id="file" text="选择文件" type="file" accept="image/*,video/*" class="form-control" multiple>
     <button id="upload" class="input-group-text" for="upload">
       <span id="loading" style="display: none;" class="spinner-border spinner-border-sm" role="status"
         aria-hidden="true"></span>
@@ -64,23 +64,30 @@
       alert("File is require")
       return
     }
+    if (files[0].type.indexOf('video') == 0 && files.length > 1) {
+      alert("Video file only accept one")
+      return
+    }
 
     $('#loading').style.display = ''
 
     $('#progress').style.display = ""
     $('#progress-total').innerHTML = files.length
 
-    let filenames = files.map(it => it.name)
+    let imgsInfo = files.map(it => ({
+      name: it.name,
+      type: it.type,
+    }))
     // {{!-- await asyncPool(files, async (file) => await uploadFile(file), 2) --}}
     await asyncPool(files, async (file) => {
       await uploadFile(file)
       let n = $('#progress-current')
       n.innerHTML = Number(n.innerHTML) + 1
-    }, 2)
+    }, 5)
 
     $('#progress').style.display = 'none'
 
-    createDirectory(dir.value, filenames)
+    createDirectory(dir.value, imgsInfo)
   })
 
   async function uploadFile(file) {
@@ -102,6 +109,7 @@
   }
 
   function createDirectory(directory, imgs) {
+    console.log('imgs ->', imgs)
     let r = new XMLHttpRequest()
     r.open("POST", `${API}/create-directory`, true)
 

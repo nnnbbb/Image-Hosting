@@ -59,7 +59,8 @@ const multiUpload = multer({
     if (!fs.existsSync(IMAGES)) {
       fs.mkdirSync(IMAGES)
     }
-    if (file.mimetype.indexOf("image") == 0) {
+    const mimetype = file.mimetype
+    if (mimetype.indexOf("image") === 0 || mimetype.indexOf("video") === 0) {
       cb(null, true)
     } else {
       cb(null, false)
@@ -111,15 +112,21 @@ app.post('/projects', multiUpload.array('uploadedImages'), async (req, res) => {
     return res.status(500).send("File is require").end()
   }
 
-  for (const img of files) {
-    img.originalname = Buffer.from(img.originalname, 'latin1').toString('utf8')
-    let savePath = path.join(IMAGES, img.originalname)
-    let buffer = img.buffer
+  for (const file of files) {
+    file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+    let savePath = path.join(IMAGES, file.originalname)
+    let buffer = file.buffer
+    let mimetype = file.mimetype
 
-    const image = sharp(img.buffer)
+    if (mimetype.indexOf("video") === 0) {
+      fs.writeFileSync(savePath, buffer)
+      return res.status(200).send("successfully").end()
+    }
+    
+    const image = sharp(file.buffer)
     const metadata = await image.metadata()
-
-    if (metadata.height > 1440 && img.size > 5 * 1024 * 1024) { // size > 5M  and  height > 1440px
+    // image size > 5M  and  height > 1440px
+    if (mimetype.indexOf("image") === 0 && (metadata.height > 1440 && file.size > 5 * 1024 * 1024)) {
       buffer = await image
         .resize({ height: 1440, fit: 'inside' })
         .toBuffer()
@@ -139,9 +146,19 @@ app.get('/:tagId', async (req, res) => {
   }
   // let files = fs.readdirSync(imgPath)
   let group = await Group.findOne({ where: { directory: tagId } })
-  let files = JSON.parse(group.names)
+  if (!group) {
+    return res.status(404).send({ error: { message: "Not Found!" } })
+  }
+  let files = JSON.parse(group.files)
 
-  res.render("img", { list: files, title: tagId })
+  let imgs = files
+    .filter(it => it.mimetype.indexOf("image") === 0)
+    .map(it => it.randomName)
+
+  let others = files
+    .filter(it => it.mimetype.indexOf("image") !== 0)
+    .map(it => it.randomName)
+  return res.render("img", { imgs, videos: others, title: tagId })
 })
 
 // 图片分组
@@ -157,22 +174,23 @@ app.post('/create-directory', async (req, res) => {
   }
 
   let newImgs = imgs.map(it => {
-    let file = path.join(IMAGES, it)
-    const randomName = `${uid.sync(10)}.${path.extname(it)}`
-    let newfile = path.join(IMAGES, directory, randomName)
-    if (fs.existsSync(file)) {
-      fs.renameSync(file, newfile)
+    const filename = it.name
+    const filePath = path.join(IMAGES, filename)
+    const randomName = `${uid.sync(10)}.${path.extname(it.name)}`
+    const newfilePath = path.join(IMAGES, directory, randomName)
+    if (fs.existsSync(filePath)) {
+      fs.renameSync(filePath, newfilePath)
     }
     let res = {
-      file: it,
+      originalname: filename,
       randomName,
+      mimetype: it.type,
     }
     return res
   })
   let group = await Group.create({
     directory,
-    originalnames: newImgs.map(it => it.file),
-    names: newImgs.map(it => it.randomName),
+    files: newImgs,
   })
   return res.status(200).json(directory).end()
 })

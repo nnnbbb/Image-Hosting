@@ -1,0 +1,50 @@
+<script src="https://cdn.plyr.io/3.7.3/plyr.polyfilled.js"></script>
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.3/plyr.css" />
+
+{{#each videos}}
+  <video controls crossorigin playsinline 
+    src="{{this}}">
+  </video>
+{{/each}}
+
+{{!-- <div class="container">
+  <video controls crossorigin playsinline poster="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-HD.jpg"
+    src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4">
+  </video>
+</div> --}}
+
+<script>
+  const player = new Plyr('video', {
+    // captions: {active: true},
+    i18n: {
+      fastForward: 'Forward {seektime} secs',
+      rewind: 'Rewind {seektime} secs',
+    },
+    controls: [
+      'play-large', // The large play button in the center
+      // 'restart', // Restart playback
+      'rewind', // Rewind by the seek time (default 10 seconds)
+      'seekTime',
+      'play', // Play/pause playback
+      'fast-forward', // Fast forward by the seek time (default 10 seconds)
+      'progress', // The progress bar and scrubber for playback and buffering
+      'current-time', // The current time of playback
+      'mute', // Toggle mute
+      'volume', // Volume control
+      'captions', // Toggle captions
+      'settings', // Settings menu
+      'fullscreen', // Toggle fullscreen
+    ],
+    seekTime: 5,
+  });
+
+  // Expose player so it can be used from the console
+  window.player = player;
+</script>
+
+<style>
+  .container {
+    margin: 50px auto;
+    max-width: 100%;
+  }
+</style>

@@ -17,9 +17,11 @@ const sequelize = new Sequelize({
 
 // const alter = process.env.NODE_ENV === 'development'
 
-// sequelize.sync({ alter }).then(() => {
-//   console.log("All models were synchronized successfully.");
-// })
+sequelize.sync({
+  // sync: true,
+}).then(() => {
+  console.log("Tables created.");
+})
 
 module.exports = {
   sequelize,
