@@ -89,11 +89,18 @@ app.get('/delete/:tagId', (req, res) => {
 })
 
 // 查看全部图片链接
-app.get('/links', (req, res) => {
-  const files = fs.readdirSync(IMAGES)
+app.get('/links', async (req, res) => {
+  // const files = fs.readdirSync(IMAGES)
+  let groups = await Group.findAll({
+    order: [
+      ['id', 'DESC'],
+    ]
+  })
+  const files = groups.map(it => it.directory)
   let links = files
     .filter(it => {
-      return fs.lstatSync(path.join(IMAGES, it)).isDirectory()
+      let p = path.join(IMAGES, it)
+      return fs.existsSync(p) && fs.lstatSync(p).isDirectory()
     })
     .map(it => {
       let filePath = path.join(IMAGES, it)
