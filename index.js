@@ -9,6 +9,7 @@ const uid = require('uid-safe')
 const { asyncPool } = require("./utils")
 const { engine } = require('express-handlebars')
 const { Group } = require("./model/group")
+const { ossPut } = require("./ali-oss")
 const mime = require('mime-types')
 
 const app = express()
@@ -167,7 +168,7 @@ app.get('/:tagId', async (req, res) => {
 
   let imgs = files
     .filter(it => it.mimetype.indexOf("image") === 0)
-    .map(it => it.randomName)
+    .map(it => path.join(tagId, it.randomName).replace(/\\/g, '/'))
 
   let others = files
     .filter(it => it.mimetype.indexOf("image") !== 0)
@@ -195,6 +196,7 @@ app.post('/create-directory', async (req, res) => {
     if (fs.existsSync(filePath)) {
       fs.renameSync(filePath, newfilePath)
     }
+    ossPut(path.join(directory, randomName), newfilePath)
     let res = {
       originalname: filename,
       randomName,
