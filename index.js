@@ -137,7 +137,7 @@ app.post('/projects', multiUpload.array('uploadedImages'), async (req, res) => {
 
     if (mimetype.indexOf("video") === 0) {
       fs.writeFileSync(savePath, buffer)
-      return res.status(200).send("successfully").end()
+      return res.status(200).send(filename).end() 
     }
 
     const image = sharp(file.buffer)
@@ -175,7 +175,7 @@ app.get('/:tagId', async (req, res) => {
 
   let others = files
     .filter(it => it.mimetype.indexOf("image") !== 0)
-    .map(it => it.randomName)
+    .map(it => path.join(tagId, it.randomName).replace(/\\/g, '/'))
   return res.render("img", { imgs, videos: others, title: tagId })
 })
 
