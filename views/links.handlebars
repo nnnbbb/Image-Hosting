@@ -1,11 +1,39 @@
 {{> nav }}
+
+<div style="
+    text-align: center;
+    width: 60%;
+    margin-left: 20%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+  ">
+  <span id="all" class="badge text-bg-dark">All</span>
+  <span id="video" class="badge text-bg-secondary">Videos</span>
+  <span id="image" class="badge text-bg-light">Images</span>
+</div>
 <div class="font-monospace">
   {{#each list}}
   <div style="text-align: center; margin: 0 auto">
-    <span>{{this.mimetype}}: </span>
+    <span class="mimetype" data-mimetype="{{this.mimetype}}">{{this.mimetype}}: </span>
     <span>{{this.file}}</span>
     <a href="{{this.link}}" style="width: 100%; " target="_blank">查看</a>
     <a href="/delete/{{this.file}}" style="width: 100%; ">删除</a>
   </div>
   {{/each}}
 </div>
+<script>
+  $("#video").addEventListener('click', () => {
+    let arr = Array.from(document.getElementsByClassName("mimetype"))
+    arr.filter(it => it.dataset.mimetype == "image").map(it => it.parentElement.style.display = 'none')
+    arr.filter(it => it.dataset.mimetype == "video").map(it => it.parentElement.style.display = '')
+  })
+  $("#image").addEventListener('click', () => {
+    let arr = Array.from(document.getElementsByClassName("mimetype"))
+    arr.filter(it => it.dataset.mimetype == "image").map(it => it.parentElement.style.display = '')
+    arr.filter(it => it.dataset.mimetype == "video").map(it => it.parentElement.style.display = 'none')
+  })
+  $("#all").addEventListener('click', () => {
+    let arr = Array.from(document.getElementsByClassName("mimetype"))
+    arr.map(it => it.parentElement.style.display = '')
+  })
+</script>
