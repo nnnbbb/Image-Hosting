@@ -75,15 +75,15 @@
     $('#progress').style.display = ""
     $('#progress-total').innerHTML = files.length
 
-    let filesInfo = files.map(it => ({
-      name: it.name,
-      type: it.type,
-    }))
     // {{!-- await asyncPool(files, async (file) => await uploadFile(file), 2) --}}
-    await asyncPool(files, async (file) => {
-      await uploadFile(file)
+    let filesInfo = await asyncPool(files, async (file) => {
+      let filename = await uploadFile(file)
       let n = $('#progress-current')
       n.innerHTML = Number(n.innerHTML) + 1
+      return {
+        name: filename,
+        type: file.type,
+      }
     }, 5)
 
     $('#progress-total').innerHTML = 0
@@ -109,7 +109,7 @@
       r.onreadystatechange = function () {
         if (r.readyState === 4) {
           // console.log('xhr.responseText ->', xhr.responseText)
-          reslove()
+          reslove(r.responseText)
         }
       }
       // xhr.setRequestHeader("Content-Type", "multipart/form-data");

@@ -130,7 +130,8 @@ app.post('/projects', multiUpload.array('uploadedImages'), async (req, res) => {
 
   for (const file of files) {
     file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
-    let savePath = path.join(IMAGES, file.originalname)
+    const filename = `${uid.sync(10)}.${path.extname(file.originalname)}`
+    let savePath = path.join(IMAGES, filename)
     let buffer = file.buffer
     let mimetype = file.mimetype
 
@@ -148,8 +149,9 @@ app.post('/projects', multiUpload.array('uploadedImages'), async (req, res) => {
         .toBuffer()
     }
     fs.writeFileSync(savePath, buffer)
+    return res.status(200).send(filename).end() 
   }
-  return res.status(200).send("successfully").end()
+  // return res.status(200).send("successfully").end()
 
 })
 
