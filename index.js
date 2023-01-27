@@ -9,7 +9,7 @@ const uid = require('uid-safe')
 const { asyncPool } = require("./utils")
 const { engine } = require('express-handlebars')
 const { Group } = require("./model/group")
-const { ossPut } = require("./ali-oss")
+const { ossPut, ossDeleteDirectory } = require("./ali-oss")
 const mime = require('mime-types')
 
 const app = express()
@@ -78,15 +78,16 @@ app.get('/', (req, res) => {
 })
 
 // 删除一组图片
-app.get('/delete/:tagId', (req, res) => {
+app.get('/delete/:tagId', async (req, res) => {
   const tagId = req.params.tagId
   const newDir = path.join(IMAGES, tagId)
   if (!fs.existsSync(newDir)) {
     return res.status(404).send("Not Found").end()
   }
   fs.rmSync(newDir, { recursive: true })
-  Group.destroy({ where: { directory: tagId } })
-  res.redirect('/links')
+  await Group.destroy({ where: { directory: tagId } })
+  await ossDeleteDirectory(tagId)
+  return res.redirect('/links')
 })
 
 // 查看全部图片链接
@@ -190,13 +191,13 @@ app.post('/create-directory', async (req, res) => {
 
   let newImgs = await asyncPool(imgs, async it => {
     const filename = it.name
-    const filePath = path.join(IMAGES, filename)
+    const oldfilePath = path.join(IMAGES, filename)
     const randomName = `${uid.sync(10)}.${path.extname(it.name)}`
     const newfilePath = path.join(IMAGES, directory, randomName)
-    if (fs.existsSync(filePath)) {
-      fs.renameSync(filePath, newfilePath)
+    if (fs.existsSync(oldfilePath)) {
+      await ossPut(path.join(directory, randomName), oldfilePath)
+      fs.renameSync(oldfilePath, newfilePath)
     }
-    await ossPut(path.join(directory, randomName), newfilePath)
     let res = {
       originalname: filename,
       randomName,
