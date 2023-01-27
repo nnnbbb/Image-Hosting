@@ -188,7 +188,7 @@ app.post('/create-directory', async (req, res) => {
     fs.mkdirSync(newDirectory)
   }
 
-  let newImgs = imgs.map(it => {
+  let newImgs = await asyncPool(imgs, async it => {
     const filename = it.name
     const filePath = path.join(IMAGES, filename)
     const randomName = `${uid.sync(10)}.${path.extname(it.name)}`
@@ -196,7 +196,7 @@ app.post('/create-directory', async (req, res) => {
     if (fs.existsSync(filePath)) {
       fs.renameSync(filePath, newfilePath)
     }
-    ossPut(path.join(directory, randomName), newfilePath)
+    await ossPut(path.join(directory, randomName), newfilePath)
     let res = {
       originalname: filename,
       randomName,
