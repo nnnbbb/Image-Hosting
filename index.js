@@ -6,10 +6,10 @@ const fs = require('fs')
 const _ = require('lodash')
 const sharp = require('sharp')
 const uid = require('uid-safe')
-const { asyncPool } = require("./utils")
+const { asyncPool, bufferToStream } = require("./utils")
 const { engine } = require('express-handlebars')
 const { Group } = require("./model/group")
-const { ossPut, ossDeleteDirectory } = require("./ali-oss")
+const { ossPut, ossDeleteDirectory, ossUpload } = require("./ali-oss")
 const mime = require('mime-types')
 
 const app = express()
@@ -135,24 +135,22 @@ app.post('/projects', multiUpload.array('uploadedImages'), async (req, res) => {
     let buffer = file.buffer
     let mimetype = file.mimetype
 
-    if (mimetype.indexOf("video") === 0) {
-      fs.writeFileSync(savePath, buffer)
-      return res.status(200).send(filename).end() 
+    if (mimetype.indexOf("video") === 0) { }
+    if (mimetype.indexOf("image") === 0) {
+      const image = sharp(buffer)
+      const metadata = await image.metadata()
+      // image size > 5M  and  height > 1440px
+      if (metadata.height > 1440 && file.size > 5 * 1024 * 1024) {
+        buffer = await image
+          .resize({ height: 1440, fit: 'inside' })
+          .toBuffer()
+      }
     }
 
-    const image = sharp(file.buffer)
-    const metadata = await image.metadata()
-    // image size > 5M  and  height > 1440px
-    if (mimetype.indexOf("image") === 0 && (metadata.height > 1440 && file.size > 5 * 1024 * 1024)) {
-      buffer = await image
-        .resize({ height: 1440, fit: 'inside' })
-        .toBuffer()
-    }
-    fs.writeFileSync(savePath, buffer)
-    return res.status(200).send(filename).end() 
+    let outStream = fs.createWriteStream(savePath)
+    bufferToStream(buffer).pipe(outStream)
+    return res.status(200).send(filename).end()
   }
-  // return res.status(200).send("successfully").end()
-
 })
 
 // 查看图片
@@ -160,12 +158,12 @@ app.get('/:tagId', async (req, res) => {
   let tagId = req.params.tagId
   let imgPath = path.join(IMAGES, tagId)
   if (!fs.existsSync(imgPath)) {
-    return res.status(404).send({ error: { message: "Not Found!" } })
+    return res.redirect('/')
   }
   // let files = fs.readdirSync(imgPath)
   let group = await Group.findOne({ where: { directory: tagId } })
   if (!group) {
-    return res.status(404).send({ error: { message: "Not Found!" } })
+    return res.redirect('/')
   }
   let files = JSON.parse(group.files)
 
@@ -197,7 +195,7 @@ app.post('/create-directory', async (req, res) => {
     const randomName = `${uid.sync(10)}.${path.extname(it.name)}`
     const newfilePath = path.join(IMAGES, directory, randomName)
     if (fs.existsSync(oldfilePath)) {
-      await ossPut(path.join(directory, randomName), oldfilePath)
+      await ossUpload(path.join(directory, randomName), oldfilePath)
       fs.renameSync(oldfilePath, newfilePath)
     }
     let res = {

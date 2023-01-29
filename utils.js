@@ -1,3 +1,6 @@
+const { Duplex } = require('stream') 
+
+
 async function asyncPool(iterable, iteratorFn, poolLimit = 20,) {
   const ret = []
   const executing = new Set()
@@ -13,6 +16,16 @@ async function asyncPool(iterable, iteratorFn, poolLimit = 20,) {
   }
   return Promise.all(ret)
 }
+
+
+function bufferToStream(buffer) {
+  let duplex = new Duplex()
+  duplex.push(buffer)
+  duplex.push(null)
+  return duplex
+}
+
 module.exports = {
   asyncPool,
+  bufferToStream,
 }

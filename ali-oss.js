@@ -1,4 +1,5 @@
 const oss = require('ali-oss')
+const fs = require('fs')
 const path = require("path")
 
 const client = new oss({
@@ -22,17 +23,19 @@ const headers = {
   'x-oss-forbid-overwrite': 'true',
 }
 
+function handlePath(path) {
+  path = path.replace(/\\/g, '/')
+  path = "images/" + path
+  return path
+}
+
 async function ossPut(ossFilePath, file) {
-  ossFilePath = ossFilePath.replace(/\\/g, '/')
-  ossFilePath = "images/" + ossFilePath
+  const options = {
+    // headers,
+    timeout: 120000,//设置超时时间
+  }
   try {
-    // 填写OSS文件完整路径和本地文件的完整路径。OSS文件完整路径中不能包含Bucket名称。
-    // 如果本地文件的完整路径中未指定本地路径，则默认从示例程序所属项目对应本地路径中上传文件。
-    // const result = await client.put('Tone/1.png', path.normalize('C:/Users/nnn/Pictures/1.png')
-    const result = await client.put(ossFilePath, file
-      // 自定义headers
-      //,{headers}
-    )
+    const result = await client.put(ossFilePath, file, options)
     // console.log(result)
   } catch (e) {
     console.log(e)
@@ -60,10 +63,44 @@ async function ossDeleteDirectory(prefix) {
   const result = await Promise.all(list.objects.map((v) => handleDel(v.name)))
   // console.log(result)
 }
-// 如果您需要删除所有前缀为src的文件，则prefix设置为src。设置为src后，所有前缀为src的非目录文件、src目录以及目录下的所有文件均会被删除。
-// ossDeleteDirectory('AmXUlhF_UBr4QQ')
-// put()
+
+
+async function ossUpload(ossFilePath, file) {
+  ossFilePath = handlePath(ossFilePath)
+
+  // Convert the file size to megabytes (optional)
+  let mbSize = getFileMb(file)
+  if (mbSize < 10) {
+    await ossPut(ossFilePath, file)
+  } else {
+    await ossMultipartUpload(ossFilePath, file)
+  }
+}
+
+function getFileMb(file) {
+  let stats = fs.statSync(file)
+  let fileSizeInBytes = stats.size
+  // Convert the file size to megabytes (optional)
+  let mb = fileSizeInBytes / (1024 * 1024)
+  return mb
+}
+
+async function ossMultipartUpload(ossFilePath, file) {
+  const options = {
+    partSize: 1000 * 1024, //设置分片大小
+    timeout: 600000,       //设置超时时间
+  }
+
+  try {
+    const result = await client.multipartUpload(ossFilePath, file, options)
+    // console.log(result)
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 module.exports = {
   ossPut,
   ossDeleteDirectory,
+  ossUpload,
 }
