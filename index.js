@@ -105,10 +105,12 @@ app.get('/links', async (req, res) => {
       return fs.existsSync(p) && fs.lstatSync(p).isDirectory()
     })
     .map(it => {
-      let filePath = path.join(IMAGES, it)
-      fs.readdirSync(filePath)
-      // let mimeType = mime.lookup(it)
-      let mimetype = fs.readdirSync(filePath).length === 1 ? "video" : "image"
+      let directory = path.join(IMAGES, it)
+      let fileList = fs.readdirSync(directory)
+      let filePath = path.join(directory, fileList[0])
+      let lookup = mime.lookup(filePath)
+
+      let mimetype = (fileList.length === 1 && lookup.includes("video")) ? "video" : "image"
 
       let res = {
         link: `http://${host}:${port}/${it}`,
