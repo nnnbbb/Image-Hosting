@@ -18,8 +18,11 @@
   </div>
   <div id="links"> </div>
 
+  <div id="task-progress">
+    <span id="progress-current">0</span> / <span id="progress-total">0</span>
+  </div>
+
   <div id="progress" class="font-monospace" style="display: none;">
-    {{!-- <span id="progress-current">0</span> / <span id="progress-total">0</span> --}}
   </div>
 
 
@@ -72,22 +75,23 @@
     $('#loading').style.display = ''
 
     $('#progress').style.display = ""
-    // $('#progress-total').innerHTML = files.length
+    $('#progress-total').innerHTML = files.length
 
     // {{!-- await asyncPool(files, async (file) => await uploadFile(file), 2) --}}
     let filesInfo = await asyncPool(files, async (file) => {
       let filename = await uploadFile(file)
-      // let n = $('#progress-current')
-      // n.innerHTML = Number(n.innerHTML) + 1
+      let n = $('#progress-current')
+      n.innerHTML = Number(n.innerHTML) + 1
       return {
         name: filename,
         type: file.type,
       }
     }, 5)
 
-    // $('#progress-total').innerHTML = 0
-    // $('#progress-current').innerHTML = 0
-    // $('#progress').style.display = 'none'
+    $('#progress-total').innerHTML = 0
+    $('#progress-current').innerHTML = 0
+    $('#task-progress').style.display = 'none'
+    $('#progress').style.display = 'none'
 
 
     let imgs = filesInfo.filter(it => it.type.indexOf("image") === 0)
@@ -187,7 +191,7 @@
     span.innerHTML = "0%"
     div.appendChild(lable)
     div.appendChild(span)
-    $("#progress").appendChild(div)
+    $("#progress").prepend(div)
     return span
   }
   let canvas = document.createElement('canvas')

@@ -82,7 +82,7 @@ app.get('/delete/:tagId', async (req, res) => {
   const tagId = req.params.tagId
   const newDir = path.join(IMAGES, tagId)
   if (!fs.existsSync(newDir)) {
-    return res.status(404).send("Not Found").end()
+    return res.redirect('/links')
   }
   fs.rmSync(newDir, { recursive: true })
   await Group.destroy({ where: { directory: tagId } })
