@@ -102,7 +102,7 @@ app.get('/links', async (req, res) => {
   let links = files
     .filter(it => {
       let p = path.join(IMAGES, it)
-      return fs.existsSync(p) && fs.lstatSync(p).isDirectory()
+      return fs.existsSync(p) && fs.lstatSync(p).isDirectory() && fs.readdirSync(p).length > 0
     })
     .map(it => {
       let directory = path.join(IMAGES, it)

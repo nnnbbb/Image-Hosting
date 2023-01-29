@@ -89,6 +89,11 @@ async function ossMultipartUpload(ossFilePath, file) {
   const options = {
     partSize: 1000 * 1024, //设置分片大小
     timeout: 600000,       //设置超时时间
+    progress: ((percent, data, res) => {
+      let n = Math.floor(percent * 100)
+      let percentVal = n + '%'
+      n % 2 === 0 && console.log('file ->', data.file, percentVal)
+    })
   }
 
   try {
