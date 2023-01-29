@@ -1,17 +1,27 @@
 {{> nav }}
 
-<div style="
-    text-align: center;
-    width: 60%;
-    margin-left: 20%;
-    margin-top: 2%;
-    margin-bottom: 2%;
-  ">
-  <span id="all" class="badge text-bg-dark">All</span>
-  <span id="video" class="badge text-bg-secondary">Videos</span>
-  <span id="image" class="badge text-bg-light">Images</span>
-</div>
 <div class="font-monospace">
+  <div style="
+      text-align: center;
+      width: 60%;
+      margin-left: 20%;
+      margin-top: 2%;
+      margin-bottom: 2%;
+    ">
+
+    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+      <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+      <label id="all" class="btn" for="btnradio1">All</label>
+
+      <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+      <label id="video" class="btn" for="btnradio2">Videos</label>
+
+      <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+      <label id="image" class="btn" for="btnradio3">Images</label>
+    </div>
+
+  </div>
+
   {{#each list}}
   <div style="text-align: center; margin: 0 auto">
     <span class="mimetype" data-mimetype="{{this.mimetype}}">{{this.mimetype}}: </span>
@@ -37,3 +47,23 @@
     arr.map(it => it.parentElement.style.display = '')
   })
 </script>
+
+<style>
+  .btn-outline-primary {
+    font-size: 12px;
+    --bs-btn-color: #0c0d0e;
+    --bs-btn-border-color: #202225;
+    --bs-btn-hover-color: #3f3a3a;
+    --bs-btn-hover-bg: #202122;
+    --bs-btn-hover-border-color: #131518;
+    --bs-btn-focus-shadow-rgb: 13, 110, 253;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #737b86;
+    --bs-btn-active-border-color: #22262d;
+    --bs-btn-active-shadow: inset 0 3px 5pxrgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #2d3745;
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: #505e73;
+    --bs-gradient: none;
+  }
+</style>
