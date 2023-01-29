@@ -16,12 +16,13 @@
       上传
     </button>
   </div>
+  <div id="links"> </div>
+
   <div id="progress" class="font-monospace" style="display: none;">
-    <span id="progress-current">0</span> / <span id="progress-total">0</span>
+    {{!-- <span id="progress-current">0</span> / <span id="progress-total">0</span> --}}
   </div>
 
-  <div id="links">
-  </div>
+
 </div>
 {{!-- 第二种方式 前端压缩 --}}
 
@@ -71,22 +72,22 @@
     $('#loading').style.display = ''
 
     $('#progress').style.display = ""
-    $('#progress-total').innerHTML = files.length
+    // $('#progress-total').innerHTML = files.length
 
     // {{!-- await asyncPool(files, async (file) => await uploadFile(file), 2) --}}
     let filesInfo = await asyncPool(files, async (file) => {
       let filename = await uploadFile(file)
-      let n = $('#progress-current')
-      n.innerHTML = Number(n.innerHTML) + 1
+      // let n = $('#progress-current')
+      // n.innerHTML = Number(n.innerHTML) + 1
       return {
         name: filename,
         type: file.type,
       }
     }, 5)
 
-    $('#progress-total').innerHTML = 0
-    $('#progress-current').innerHTML = 0
-    $('#progress').style.display = 'none'
+    // $('#progress-total').innerHTML = 0
+    // $('#progress-current').innerHTML = 0
+    // $('#progress').style.display = 'none'
 
 
     let imgs = filesInfo.filter(it => it.type.indexOf("image") === 0)
@@ -100,13 +101,23 @@
   async function uploadFile(file) {
     let formData = new FormData()
     formData.append("uploadedImages", file, file.name)
+    let span = createProgressElement(file.name)
 
     return new Promise((reslove, reject) => {
       let r = new XMLHttpRequest()
+
+      r.upload.addEventListener("progress", function (e) {
+        let percent = (e.loaded / e.total) * 100
+        //**percent** variable can be used for modifying the length of your progress bar.
+        let percentVal = Math.floor(percent) + '%'
+
+        span.innerHTML = percentVal
+      })
+
       r.open("POST", `${API}/projects`, true)
       r.onreadystatechange = function () {
         if (r.readyState === 4) {
-          // console.log('xhr.responseText ->', xhr.responseText)
+          // console.log('xhr.responseText ->', r.responseText)
           reslove(r.responseText)
         }
       }
@@ -168,6 +179,17 @@
     return div
   }
 
+  function createProgressElement(filename) {
+    let div = document.createElement('div')
+    let lable = document.createElement('lable')
+    lable.innerHTML = `${filename} `
+    let span = document.createElement('span')
+    span.innerHTML = "0%"
+    div.appendChild(lable)
+    div.appendChild(span)
+    $("#progress").appendChild(div)
+    return span
+  }
   let canvas = document.createElement('canvas')
 
   function getCanvas(file) {
