@@ -197,15 +197,14 @@ app.post('/create-directory', async (req, res) => {
   let newImgs = await asyncPool(imgs, async it => {
     const filename = it.name
     const oldfilePath = path.join(IMAGES, filename)
-    const randomName = `${uid.sync(10)}.${path.extname(it.name)}`
-    const newfilePath = path.join(IMAGES, directory, randomName)
+    const newfilePath = path.join(IMAGES, directory, filename)
     if (fs.existsSync(oldfilePath)) {
-      await ossUpload(path.join(directory, randomName), oldfilePath)
+      await ossUpload(path.join(directory, filename), oldfilePath)
       fs.renameSync(oldfilePath, newfilePath)
     }
     let res = {
       originalname: filename,
-      randomName,
+      randomName: filename,
       mimetype: it.type,
     }
     return res
