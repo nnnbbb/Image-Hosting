@@ -178,7 +178,10 @@ app.get('/:tagId', async (req, res) => {
 
   let others = files
     .filter(it => it.mimetype.indexOf("image") !== 0)
-    .map(it => path.join(tagId, it.randomName).replace(/\\/g, '/'))
+    .map(it => {
+      let url = process.env.OSS_HOST + path.join("/", tagId, it.randomName).replace(/\\/g, '/')
+      return url
+    })
   return res.render("img", { imgs, videos: others, title: tagId })
 })
 

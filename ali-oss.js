@@ -70,9 +70,9 @@ async function ossUpload(ossFilePath, file) {
 
   // Convert the file size to megabytes (optional)
   let mbSize = getFileMb(file)
-  if (mbSize < 10) {
+  if (mbSize < 20) {
     await ossPut(ossFilePath, file)
-  } else {
+  } else if (process.env.OSS_HOST != "") {
     await ossMultipartUpload(ossFilePath, file)
   }
 }
