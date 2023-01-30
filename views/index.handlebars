@@ -6,7 +6,7 @@
     margin-left: 20%;
     margin-top: 5%;
   ">
-  <p class="font-monospace">Select your image, Supported files: image or video.</p>
+  <p>Select your image, Supported files: image or video.</p>
 
   <div class="input-group mb-3">
     <input id="file" text="选择文件" type="file" accept="image/*,video/*" class="form-control" multiple>
@@ -18,11 +18,11 @@
   </div>
   <div id="links"> </div>
 
-  <div id="task-progress">
+  <div id="task-progress" style="display: none;">
     <span id="progress-current">0</span> / <span id="progress-total">0</span>
   </div>
 
-  <div id="progress" class="font-monospace" style="display: none;">
+  <div id="progress" style="display: none;">
   </div>
 
 
@@ -75,6 +75,7 @@
     $('#loading').style.display = ''
 
     $('#progress').style.display = ""
+    $('#task-progress').style.display = ""
     $('#progress-total').innerHTML = files.length
 
     // {{!-- await asyncPool(files, async (file) => await uploadFile(file), 2) --}}
