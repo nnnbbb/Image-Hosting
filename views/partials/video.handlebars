@@ -2,9 +2,9 @@
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.3/plyr.css" />
 
 {{#each videos}}
-  <video controls crossorigin playsinline 
-    src="{{this}}">
-  </video>
+<video class="container" controls="" autoplay="" name="media">
+  <source src="{{this}}">
+</video>
 {{/each}}
 
 {{!-- <div class="container">
@@ -13,6 +13,7 @@
   </video>
 </div> --}}
 
+{{!--
 <script>
   const player = new Plyr('video', {
     // captions: {active: true},
@@ -41,10 +42,10 @@
   // Expose player so it can be used from the console
   window.player = player;
 </script>
-
+--}}
 <style>
   .container {
     margin: 50px auto;
-    max-width: 100%;
+    max-width: 1000px;
   }
 </style>
