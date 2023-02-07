@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon -e js,json,handlebars",
     "start:prod": "cross-env pm2 start index.js -i 1 --name=Image-Hosting"
   },
   "keywords": [],

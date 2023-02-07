@@ -107,10 +107,17 @@ app.get('/links', async (req, res) => {
     .map(it => {
       let directory = path.join(IMAGES, it)
       let fileList = fs.readdirSync(directory)
-      let filePath = path.join(directory, fileList[0])
-      let lookup = mime.lookup(filePath)
+      let types = new Set()
+      fileList.map(it => {
+        let lookup = mime.lookup(it)
+        if (lookup.includes("video")) {
+          types.add("video")
+        } else {
+          types.add("image")
+        }
+      })
 
-      let mimetype = (fileList.length === 1 && lookup.includes("video")) ? "video" : "image"
+      let mimetype = [...types].join(" and ")
 
       let res = {
         link: `http://${host}:${port}/${it}`,
@@ -158,6 +165,10 @@ app.post('/projects', multiUpload.array('uploadedImages'), async (req, res) => {
   }
 })
 
+app.get('/directory-upload', async (req, res) => {
+  return res.render("directory-upload")
+})
+
 // 查看图片
 app.get('/:tagId', async (req, res) => {
   let tagId = req.params.tagId
@@ -181,6 +192,25 @@ app.get('/:tagId', async (req, res) => {
     .map(it => {
       let url = process.env.OSS_HOST + path.join("/", tagId, it.randomName).replace(/\\/g, '/')
       return url
+    })
+
+  let fileList = fs.readdirSync(imgPath)
+  fileList = fileList
+    .filter(it1 => {
+      let is = _.some(files, (it2) => {
+        let r = it2.randomName === it1
+        return !r
+      })
+      return is
+    })
+    .map(it => path.join("/", tagId, it).replace(/\\/g, '/'))
+    .map(it => {
+      let lookup = mime.lookup(it)
+      if (lookup.includes("image")) {
+        imgs.push(it)
+      } else {
+        others.push(it)
+      }
     })
   return res.render("img", { imgs, videos: others, title: tagId })
 })
