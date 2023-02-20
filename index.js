@@ -190,20 +190,17 @@ app.get('/:tagId', async (req, res) => {
   let others = files
     .filter(it => it.mimetype.indexOf("image") !== 0)
     .map(it => {
-      let url = process.env.OSS_HOST + path.join("/", tagId, it.randomName).replace(/\\/g, '/')
+      let url = process.env.OSS_HOST + path.join(tagId, it.randomName).replace(/\\/g, '/')
       return url
     })
 
   let fileList = fs.readdirSync(imgPath)
   fileList = fileList
     .filter(it1 => {
-      let is = _.some(files, (it2) => {
-        let r = it2.randomName === it1
-        return !r
-      })
-      return is
+      let is = _.some(files, (it2) => it2.randomName === it1)
+      return !is
     })
-    .map(it => path.join("/", tagId, it).replace(/\\/g, '/'))
+    .map(it => path.join(tagId, it).replace(/\\/g, '/'))
     .map(it => {
       let lookup = mime.lookup(it)
       if (lookup.includes("image")) {
