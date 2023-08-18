@@ -2,3 +2,4 @@ images/*
 *.sqlite
 node_modules/*
 .env
+.vscode/
